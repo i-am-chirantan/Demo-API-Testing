@@ -9,9 +9,9 @@ app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3000;
 
-// Start the server
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// Root route
+app.get('/', (req, res) => {
+  res.send('Welcome to the API!');
 });
 
 // MongoDB connection
@@ -145,4 +145,9 @@ app.delete('/items/:id', async (req, res) => {
     console.error('Error deleting item:', err);
     res.status(500).json({ error: 'Internal Server Error' });
   }
+});
+
+// Start the server
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
