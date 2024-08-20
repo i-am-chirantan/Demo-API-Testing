@@ -1,25 +1,27 @@
 // Load environment variables from the .env file
 require('dotenv').config();
+
 const express = require('express');
 const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
+const { MongoClient, ServerApiVersion } = require('mongodb');
 
 const app = express();
 app.use(bodyParser.json());
 
 const PORT = process.env.PORT || 3000;
 
-// Root route
-app.get('/', (req, res) => {
-  res.send('Welcome to the API!');
-});
-
-// MongoDB connection
+// MongoDB connection using Mongoose
 const mongoURI = process.env.MONGO_URI;
 
 mongoose.connect(mongoURI)
   .then(() => console.log('MongoDB connected to the cloud'))
   .catch(err => console.error('MongoDB connection error:', err));
+
+// Root route
+app.get('/', (req, res) => {
+  res.send('Welcome to the API!');
+});
 
 // Define a schema
 const itemSchema = new mongoose.Schema({
@@ -63,7 +65,7 @@ app.post('/items', async (req, res) => {
   }
 });
 
-// Read - GET
+// Read - GET all items
 app.get('/items', async (req, res) => {
   try {
     const items = await Item.find();
@@ -146,6 +148,28 @@ app.delete('/items/:id', async (req, res) => {
     res.status(500).json({ error: 'Internal Server Error' });
   }
 });
+
+// MongoDB connection using MongoClient (Optional: Pinging deployment)
+const uri = process.env.MONGO_URI;
+const client = new MongoClient(uri, {
+  serverApi: {
+    version: ServerApiVersion.v1,
+    strict: true,
+    deprecationErrors: true,
+  }
+});
+
+async function run() {
+  try {
+    await client.connect();
+    await client.db("admin").command({ ping: 1 });
+    console.log("Pinged your deployment. You successfully connected to MongoDB!");
+  } finally {
+    await client.close();
+  }
+}
+
+run().catch(console.dir);
 
 // Start the server
 app.listen(PORT, () => {
